@@ -1,0 +1,25 @@
+name: Actions Output Tester
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test-with-defined-output:
+    runs-on: ubuntu-latest
+
+    outputs:
+      my_output: ${{ steps.out1.outputs.my_output }}
+
+    steps:
+      - name: output one line
+        id: out1
+        run: echo 'my_output="Hello, world!"' >> $GITHUB_OUTPUT
+
+  read-defined-output:
+    needs: [test-with-defined-output]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Read the output
+        run: echo "The output is ${{ needs.test-with-defined-output.outputs.my_output }}"
