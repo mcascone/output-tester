@@ -12,6 +12,14 @@ jobs:
         id: out1
         run: echo 'out1="Hello, world!"' >> $GITHUB_OUTPUT
 
-      - name: create output 2 (undeclared)
+      - name: create output 2
         id: out2
         run: echo 'out2="where am i"' >> $GITHUB_OUTPUT
+
+      - name: print steps context output
+        id: print
+        run: |
+          echo "${{ toJSON(steps) }}"
+
+      - name: load ts action
+        uses: ./

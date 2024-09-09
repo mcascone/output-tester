@@ -10,16 +10,77 @@ jobs:
 
     outputs:
       my_output: ${{ steps.out1.outputs.my_output }}
+      # undeclared_output is... undeclared
 
     steps:
       - name: output one line
         id: out1
         run: echo 'my_output="Hello, world!"' >> $GITHUB_OUTPUT
 
+      - name: do an undeclared output
+        id: out2
+        run: echo 'undeclared_output="where am i"' >> $GITHUB_OUTPUT
+        
+      ### IS ABLE TO SEE UNDECLARED LOCAL OUTPUT
+      - name: print LOCAL undeclared output
+        run: echo "undeclared_output = ${{ steps.out2.outputs.undeclared_output }}"        ### | undeclared_output = where am i
+
+      - name: all step outs
+        run: echo "${{ toJSON(steps) }} | yq "  ### | {"out1":"my_output=\"Hello, world!\"","out2":"undeclared_output=\"where am i\""}
+
   read-defined-output:
-    needs: [test-with-defined-output]
+    needs: test-with-defined-output
     runs-on: ubuntu-latest
 
     steps:
-      - name: Read the output
-        run: echo "The output is ${{ needs.test-with-defined-output.outputs.my_output }}"
+      - name: Read the NEEDS output
+        run: echo "The output is ${{ needs.test-with-defined-output.outputs.my_output }}"  ### | The output is Hello, world!
+      
+      ### DOES NOT SEE THE UNDECLARED OUTPUT
+      - name: print all NEEDS outputs
+        run: echo "job1 outputs = ${{ toJSON(needs.test-with-defined-output.outputs) }}"   ### | job1 outputs: {
+                                                                                           ### |   my_output: "Hello, world!"
+                                                                                           ### | }
+
+      ### DOES NOT GET THE DATA 
+      - name: print NEEDS undeclared output
+        run: echo "job1 undeclared output = ${{ needs.test-with-defined-output.outputs.undeclared_output }}"  ### | job1 undeclared output:
+
+  read-local-outputs:
+    runs-on: ubuntu-latest
+    needs: read-defined-output
+
+    outputs:
+      output1: ${{ steps.create_output.outputs.output1 }}
+
+    steps:
+      - name: create output 1
+        id: create_output
+        run: echo 'output1="primus sux"' >> $GITHUB_OUTPUT
+
+      ### PRINTS NOTHING
+      - name: print local outputs from file
+        run: cat $GITHUB_OUTPUT
+
+      - name: create env var 1
+        run: echo "OUTPUT1='odoyle rules'" >> $GITHUB_ENV
+
+      - name: print local outputs from env var
+        run: echo "OUTPUT1 = $OUTPUT1"   ### | OUTPUT1 = 'odoyle rules'
+
+      - name: print all env vars
+        run: cat $GITHUB_ENV
+
+      - name: create env var 2
+        run: echo "OUTPUT2='the price is wrong, bob'" >> $GITHUB_ENV
+
+      - name: print all env vars again
+        run: cat $GITHUB_ENV
+
+      - name: test catting
+        run: |
+          echo 'sdfijbsdf' > testfile
+          cat testfile
+
+      - name: ls
+        run: ls $GITHUB_ENV

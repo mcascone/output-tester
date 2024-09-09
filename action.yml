@@ -1,0 +1,7 @@
+name: Generic TypeScript Action
+description: 'Provide a description here'
+author: 'Your name or organization here'
+
+runs:
+  using: node20
+  main: index.js
