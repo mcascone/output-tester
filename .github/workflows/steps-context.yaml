@@ -1,0 +1,17 @@
+name: Steps Context POC
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: create output 1
+        id: out1
+        run: echo 'out1="Hello, world!"' >> $GITHUB_OUTPUT
+
+      - name: create output 2 (undeclared)
+        id: out2
+        run: echo 'out2="where am i"' >> $GITHUB_OUTPUT
