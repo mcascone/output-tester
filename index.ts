@@ -1,28 +1,39 @@
 import * as core from '@actions/core';
 
+type JsonStepData = {
+  [key: string]: {
+    outputs: { [key: string]: any },
+    conclusion: string,
+    outcome: string
+  }
+}
+
+type ExtractedOutput = {
+  [key: string]: any
+}
+
 async function getconfigdata() {
-  type JsonData = {
-    [key: string]: {
-      outputs: { [key: string]: any },
-      conclusion: string,
-      outcome: string
+  core.info('Getting step data');
+
+  const stepInput: JsonStepData = JSON.parse(core.getInput('stepdata'));
+  core.debug('input data: ' + JSON.stringify(stepInput));
+
+  const extracts: ExtractedOutput[] = extractOutputs(stepInput);
+  core.debug('Extracted data: ' + JSON.stringify(extracts));
+
+  core.setOutput('finaloutput', extracts);
+};
+
+function extractOutputs(data: JsonStepData): { [key: string]: any }[] {
+  const outputsArray: ExtractedOutput[] = [];
+  
+  for (const key in data) {
+    if (data[key].outputs && Object.keys(data[key].outputs).length > 0) {
+      outputsArray.push(data[key].outputs);
     }
-  };
-  
-  function extractOutputs(data: JsonData): { [key: string]: any }[] {
-    const outputsArray: { [key: string]: any }[] = [];
-  
-    for (const key in data) {
-      if (data[key].outputs) {
-        outputsArray.push(data[key].outputs);
-      }
-    }
-  
-    return outputsArray;
   }
 
-
-
+  return outputsArray;
 }
 
 getconfigdata();

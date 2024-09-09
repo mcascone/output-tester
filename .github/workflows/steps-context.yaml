@@ -8,18 +8,23 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     steps:
-      - name: create output 1
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: create out1
         id: out1
         run: echo 'out1="Hello, world!"' >> $GITHUB_OUTPUT
 
-      - name: create output 2
+      - name: create out2
         id: out2
         run: echo 'out2="where am i"' >> $GITHUB_OUTPUT
 
-      - name: print steps context output
-        id: print
-        run: |
-          echo "${{ toJSON(steps) }}"
-
       - name: load ts action
+        id: extractor
         uses: ./
+        with:
+          stepdata: ${{ toJSON(steps) }}
+
+      - name: print ts action output
+        id: printts
+        run: echo "${{ toJSON(steps.extractor.outputs.finaloutput) }}"

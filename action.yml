@@ -1,7 +1,17 @@
-name: Generic TypeScript Action
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: Output Extractor
+description: Extracts the outputs from all job steps up to the point the action was run.
+author: casconem
+
+inputs:
+  stepdata:
+    description: step data
+    required: true
+    default: '{}'
+
+outputs:
+  finaloutput:
+    description: the finalized params
 
 runs:
   using: node20
-  main: index.js
+  main: dist/index.js
