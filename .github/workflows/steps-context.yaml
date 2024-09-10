@@ -31,4 +31,4 @@ jobs:
 
       - name: print ts action output
         id: printts
-        run: echo "${{ toJSON(steps.extractor.outputs.finaloutput) }}"
+        run: echo "${{ toJSON(steps.extractor.outputs.finaloutput) }}" >> $GITHUB_STEP_SUMMARY
