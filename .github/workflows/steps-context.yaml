@@ -25,7 +25,7 @@ jobs:
 
       - name: mock config env
         run: |
-          npm install -g jq
+          # npm install -g jq
           echo '{
             "app": {
               "ecrRepo": "389667733616.dkr.ecr.us-east-1.amazonaws.com",
