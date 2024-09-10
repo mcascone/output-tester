@@ -8,14 +8,11 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-      - name: set up node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           cache: 'npm'
-      - name: install
-        run:  npm ci
+      - run:  npm ci
 
       - name: create out1
         id: out1
@@ -34,6 +31,6 @@ jobs:
       - name: print ts action output
         id: printts
         run: |
-          echo "```" >> $GITHUB_STEP_SUMMARY 
+          echo '```' >> $GITHUB_STEP_SUMMARY 
           echo "${{ toJSON(steps.extractor.outputs.finaloutput) }}" >> $GITHUB_STEP_SUMMARY
-          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
