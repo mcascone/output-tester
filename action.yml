@@ -4,13 +4,12 @@ author: casconem
 
 inputs:
   stepdata:
-    description: step data
+    description: the job's step data object
     required: true
-    default: '{}'
 
 outputs:
-  finaloutput:
-    description: the finalized params
+  config_output:
+    description: the config_data object with new values if any
 
 runs:
   using: node20

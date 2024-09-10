@@ -32,19 +32,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getconfigdata = getconfigdata;
+exports.extractOutputs = extractOutputs;
 const core = __importStar(require("@actions/core"));
 function getconfigdata() {
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         core.info('Getting step data');
+        // parse the passed-in step context data
         const stepInput = JSON.parse(core.getInput('stepdata'));
-        core.debug('input data: ' + JSON.stringify(stepInput));
+        core.debug('input step data: ' + JSON.stringify(stepInput));
+        // extract the outputs from the step data
         const extracts = extractOutputs(stepInput);
-        core.debug('Extracted data: ' + JSON.stringify(extracts));
-        // TODO: test with config.path.values
-        core.setOutput('finaloutput', extracts);
+        core.debug('Extracted outputs: ' + JSON.stringify(extracts));
+        // get the config data from the environment
+        // in the real action, use config.restoreConfigData() instead
+        const configData = JSON.parse((_a = process.env['CONFIG_DATA']) !== null && _a !== void 0 ? _a : '');
+        core.debug('Incoming config data: ' + JSON.stringify(configData));
+        // for each extracted key pair, put them into the config object
+        for (const key in extracts) {
+            configData[key] = extracts[key];
+        }
+        core.setOutput('config_output', configData);
+        core.debug('Output config data: ' + JSON.stringify(configData));
+        core.info('Config data updated: ' + Object.keys(extracts));
     });
 }
-;
 function extractOutputs(data) {
     const outputsArray = [];
     for (const key in data) {

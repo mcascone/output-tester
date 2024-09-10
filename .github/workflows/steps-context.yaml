@@ -13,19 +13,22 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-      - run:  npm ci
+      - run: npm ci
+      - run: npx run test
+      - run: npm run build
 
       - name: create out1
-        id: out1
         run: echo 'build.snyk.status="Hello, world!"' >> $GITHUB_OUTPUT
 
       - name: create out2
         id: out2
         run: echo 'deploy.imageTag="where am i"' >> $GITHUB_OUTPUT
 
+      - name: print steps
+        run: echo "${{ toJSON(steps) }}"
+
       - name: mock config env
         run: |
-          # npm install -g jq
           echo '{
             "app": {
               "ecrRepo": "389667733616.dkr.ecr.us-east-1.amazonaws.com",
@@ -56,6 +59,7 @@ jobs:
       - name: echo config
         run: echo $CONFIG_DATA
 
+        # output: config_output
       - name: load ts action
         id: extractor
         uses: ./
@@ -65,6 +69,9 @@ jobs:
       - name: print ts action output
         id: printts
         run: |
+          echo "finalized config_data:" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY 
-          echo "${{ toJSON(steps.extractor.outputs.finaloutput) }} | jq" >> $GITHUB_STEP_SUMMARY
+          echo "${{ toJSON(steps.extractor.outputs.config_output) }}" | jq >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo $GITHUB_STEP_SUMMARY
