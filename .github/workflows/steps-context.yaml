@@ -11,6 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
+          node-version: '20'
           cache: 'npm'
       - run:  npm ci
 
@@ -21,6 +22,39 @@ jobs:
       - name: create out2
         id: out2
         run: echo 'deploy.imageTag="where am i"' >> $GITHUB_OUTPUT
+
+      - name: mock config env
+        run: |
+          npm install -g jq
+          echo '{
+            "app": {
+              "ecrRepo": "389667733616.dkr.ecr.us-east-1.amazonaws.com",
+              "basegitUrl": "mdpgit-live.app.mis.tld/scm",
+              "gitOpsBranch": "deployment",
+              "vault_url": "url will be loaded from vault_service_account.yaml",
+              "devxApiUrl": null
+            },
+            "build": {
+              "JAVA": "gradle",
+              "ANGULAR": "angular",
+              "PYTHON": "liquibase",
+              "NODEJS": "nodejs",
+              "DOTNETCORE": "python",
+              "SPRINGNATIVE": "springnative",
+              "SPRINGBOOT": "springboot"
+            },
+            "config": {
+              "appId": 13234,
+              "jiraKey": "EMTN",
+              "appName": "e-exp-api",
+              "liveTests": false,
+              "performanceTests": false,
+              "prod": true
+            }
+          }' | jq -c . > config_data.json
+          echo CONFIG_DATA=$(cat config_data.json) >> $GITHUB_ENV
+      - name: echo config
+        run: echo $CONFIG_DATA
 
       - name: load ts action
         id: extractor
