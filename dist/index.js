@@ -40,6 +40,7 @@ function getconfigdata() {
         core.debug('input data: ' + JSON.stringify(stepInput));
         const extracts = extractOutputs(stepInput);
         core.debug('Extracted data: ' + JSON.stringify(extracts));
+        // TODO: test with config.path.values
         core.setOutput('finaloutput', extracts);
     });
 }

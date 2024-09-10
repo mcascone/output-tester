@@ -9,7 +9,7 @@ type JsonStepData = {
 }
 
 type ExtractedOutput = {
-  [key: string]: any
+  [key: string]: String | Number | Boolean
 }
 
 async function getconfigdata() {
@@ -20,6 +20,8 @@ async function getconfigdata() {
 
   const extracts: ExtractedOutput[] = extractOutputs(stepInput);
   core.debug('Extracted data: ' + JSON.stringify(extracts));
+
+  // TODO: test with config.path.values
 
   core.setOutput('finaloutput', extracts);
 };
