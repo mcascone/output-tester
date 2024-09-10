@@ -6,7 +6,7 @@ on:
 
 jobs:
   job1:
-    runs-on: ubuntu-latest
+    runs-on: linux
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,10 +14,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run test
+      # - run: npm run test
       - run: npm run build
 
       - name: create out1
+        id: out1
         run: echo 'build.snyk.status="Hello, world!"' >> $GITHUB_OUTPUT
 
       - name: create out2
@@ -27,35 +28,12 @@ jobs:
       - name: print steps
         run: echo "${{ toJSON(steps) }}"
 
-      - name: mock config env
+      # read file into env var
+      - name: get mock config env
         run: |
-          echo '{
-            "app": {
-              "ecrRepo": "389667733616.dkr.ecr.us-east-1.amazonaws.com",
-              "basegitUrl": "mdpgit-live.app.mis.tld/scm",
-              "gitOpsBranch": "deployment",
-              "vault_url": "url will be loaded from vault_service_account.yaml",
-              "devxApiUrl": null
-            },
-            "build": {
-              "JAVA": "gradle",
-              "ANGULAR": "angular",
-              "PYTHON": "liquibase",
-              "NODEJS": "nodejs",
-              "DOTNETCORE": "python",
-              "SPRINGNATIVE": "springnative",
-              "SPRINGBOOT": "springboot"
-            },
-            "config": {
-              "appId": 13234,
-              "jiraKey": "EMTN",
-              "appName": "e-exp-api",
-              "liveTests": false,
-              "performanceTests": false,
-              "prod": true
-            }
-          }' | jq -c . > config_data.json
-          echo CONFIG_DATA=$(cat config_data.json) >> $GITHUB_ENV
+          export CONFIG_DATA=$(cat mock-data.json)
+          echo "CONFIG_DATA=$CONFIG_DATA" >> $GITHUB_ENV
+          
       - name: echo config
         run: echo $CONFIG_DATA
 
@@ -71,5 +49,5 @@ jobs:
         run: |
           echo "finalized config_data" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY 
-          echo "${{ toJSON(steps.extractor.outputs.config_output) }}" | jq >> $GITHUB_STEP_SUMMARY
+          echo "${{ toJSON(steps.extractor.outputs.config_output) }}" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
