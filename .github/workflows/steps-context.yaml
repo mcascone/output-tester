@@ -14,7 +14,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npx run test
+      - run: npm run test
       - run: npm run build
 
       - name: create out1
