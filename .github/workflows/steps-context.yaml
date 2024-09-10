@@ -73,5 +73,3 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY 
           echo "${{ toJSON(steps.extractor.outputs.config_output) }}" | jq >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-
-          echo $GITHUB_STEP_SUMMARY
