@@ -1,5 +1,5 @@
 name: Output Extractor
-description: Extracts the outputs from all job steps up to the point the action was run.
+description: Extracts the outputs from all job steps up to the point the action was run
 author: casconem
 
 inputs:
