@@ -40,6 +40,34 @@ describe('getconfigdata', () => {
     });
   });
 
+  it('should put the extracted outputs in the config data in the correct path', async () => {
+    const mockStepData = {
+      step1: {
+        outputs: { "deploy.imageTag": 'newImageTag' },
+        conclusion: 'success',
+        outcome: 'success',
+      },
+    };
+
+    const mockConfigData = {
+      existingKey: 'existingValue',
+      deploy: { imageTag: 'oldImageTag', otherData: 'otherData' },
+    };
+
+    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify(mockStepData));
+    (core.setOutput as jest.Mock).mockImplementation(() => {});
+    process.env['CONFIG_DATA'] = JSON.stringify(mockConfigData);
+
+    await getconfigdata();
+
+    expect(core.getInput).toHaveBeenCalledWith('stepdata');
+    expect(core.setOutput).toHaveBeenCalledWith('config_output', {
+      existingKey: 'existingValue',
+      deploy: { imageTag: 'newImageTag', otherData: 'otherData' },
+    });
+  });
+
+
   it('should handle empty outputs gracefully', async () => {
     const mockStepData = {
       step1: {
