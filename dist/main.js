@@ -83,10 +83,10 @@ function extractOutputs(data) {
 function updateConfigFromExtracts(extracts, configData) {
     extracts.forEach(extract => {
         for (const key in extract) {
-            const path = key.split('.');
+            const path = key.replace('config.', '').split('.');
             const lastKey = path.pop();
             if (!lastKey) {
-                core.error("Invalid key: ${key}");
+                core.error(`Invalid key: ${key}`);
                 continue;
             }
             const nestedObject = path.reduce((obj, prop) => {

@@ -43,9 +43,9 @@ export async function getconfigdata() {
 
 // UTILITY FUNCTIONS
 
-// extract the outputs from the passed-in step context data.
-// only include outputs that start with 'config.'
-function extractOutputs(data: JsonStepData): { [key: string]: any }[] {
+// Extract the outputs from the passed-in step context data.
+// Only include outputs that start with 'config.'
+export function extractOutputs(data: JsonStepData): { [key: string]: any }[] {
   const outputsArray: ExtractedOutput[] = [];
   
   for (const key in data) {
@@ -65,22 +65,31 @@ function extractOutputs(data: JsonStepData): { [key: string]: any }[] {
   return outputsArray;
 }
 
-// Updates the configData object using the array of extracted objects.
-// Each key in the extract objects represents a path in the configData structure.
-// The function splits the key into parts, navigates through configData, and sets the value.
-// If the key is invalid, it logs an error.
-// This allows for dynamic updates to deeply nested structures in configData.
+/**
+ * This function updates the `configData` object based on the provided `extracts`.
+ * Each `extract` is an object with key-value pairs representing configuration updates.
+ * The function iterates over each `extract` and applies the updates to the `configData` object.
+ * 
+ * Explanation of the code:
+ * - The function uses the `forEach` method to iterate over each `extract`.
+ * - For each `extract`, it retrieves the keys using `Object.keys(extract)`.
+ * - The key is then modified by removing the prefix 'config.' and splitting it into an array of nested keys using the `split` method.
+ * - The last key is extracted using the `pop` method.
+ * - If there is no last key, an error is logged using `core.error` and the iteration continues to the next `extract`.
+ * - The function then uses the `reduce` method on the `path` array to traverse the `configData` object and create any necessary nested objects.
+ * - Finally, the value of the last key in the `extract` is assigned to the corresponding property in the nested object.
+ */
 type Extract    = { [key: string]: any };
 type ConfigData = { [key: string]: any };
 
 export function updateConfigFromExtracts(extracts: Extract[], configData: ConfigData): void {
   extracts.forEach(extract => {
     for (const key in extract) {
-      const path = key.split('.');
+      const path = key.replace('config.', '').split('.');
       const lastKey = path.pop();
 
       if (!lastKey) {
-        core.error("Invalid key: ${key}");
+        core.error(`Invalid key: ${key}`);
         continue;
       }
 

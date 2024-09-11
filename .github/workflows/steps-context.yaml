@@ -9,20 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # - uses: actions/setup-node@v4
-      #   with:
-      #     node-version: '20'
-      #     cache: 'npm'
-      # - run: npm ci
-      # # - run: npm run test
-      # - run: npm run build
 
-      - name: create out1
-        id: out1
+      # read mock-data.json into CONFIG_DATA
+      - name: get mock config env
+        run: echo "CONFIG_DATA=$(cat mock-data.json | jq . -c)" >> $GITHUB_ENV
+
+      - name: create action1 output
+        id: action1
         run: echo 'config.build.JAVA=tester' >> $GITHUB_OUTPUT
 
-      - name: create out2
-        id: out2
+      - name: create action2 output
+        id: action2
         run: echo 'config.deploy.imageTag=abc123.lloool:34324' >> $GITHUB_OUTPUT
 
       - name: an output that should not be captured
@@ -31,13 +28,7 @@ jobs:
       # - name: print steps
       #   run: echo "${{ toJSON(steps) }}"
 
-      # read file into env var
-      # read mock-data.json into CONFIG_DATA
-      - name: get mock config env
-        run: |
-          echo "CONFIG_DATA=$(cat mock-data.json | jq . -c)" >> $GITHUB_ENV
-
-        # output: config_output
+      # output: config_output
       - name: load ts action
         id: extractor
         uses: ./
