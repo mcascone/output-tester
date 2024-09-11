@@ -9,33 +9,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-      - run: npm ci
-      # - run: npm run test
-      - run: npm run build
+      # - uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      #     cache: 'npm'
+      # - run: npm ci
+      # # - run: npm run test
+      # - run: npm run build
 
       - name: create out1
         id: out1
-        run: echo 'build.snyk.status="Hello, world!"' >> $GITHUB_OUTPUT
+        run: echo 'config.build.JAVA=tester' >> $GITHUB_OUTPUT
 
       - name: create out2
         id: out2
-        run: echo 'deploy.imageTag="where am i"' >> $GITHUB_OUTPUT
+        run: echo 'config.deploy.imageTag=abc123.lloool:34324' >> $GITHUB_OUTPUT
 
-      - name: print steps
-        run: echo "${{ toJSON(steps) }}"
+      - name: an output that should not be captured
+        run: echo 'some-other-output="i should not be here"' >> $GITHUB_OUTPUT
+
+      # - name: print steps
+      #   run: echo "${{ toJSON(steps) }}"
 
       # read file into env var
+      # read mock-data.json into CONFIG_DATA
       - name: get mock config env
         run: |
-          export CONFIG_DATA=$(cat mock-data.json)
-          echo "CONFIG_DATA=$CONFIG_DATA" >> $GITHUB_ENV
-          
-      - name: echo config
-        run: echo $CONFIG_DATA
+          echo "CONFIG_DATA=$(cat mock-data.json | jq . -c)" >> $GITHUB_ENV
 
         # output: config_output
       - name: load ts action
@@ -44,10 +44,10 @@ jobs:
         with:
           stepdata: ${{ toJSON(steps) }}
 
-      - name: print ts action output
-        id: printts
-        run: |
-          echo "finalized config_data" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY 
-          echo "${{ toJSON(steps.extractor.outputs.config_output) }}" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+      # - name: print ts action output
+      #   id: printts
+      #   run: |
+      #     echo "finalized config_data" >> $GITHUB_STEP_SUMMARY
+      #     echo '```' >> $GITHUB_STEP_SUMMARY 
+      #     echo "${{ toJSON(steps.extractor.outputs.config_output) }}" >> $GITHUB_STEP_SUMMARY
+      #     echo '```' >> $GITHUB_STEP_SUMMARY
