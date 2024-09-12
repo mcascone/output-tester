@@ -14,7 +14,7 @@ jobs:
 
       # read mock-data.json into CONFIG_DATA
       - name: get mock config env
-        run: echo "CONFIG_DATA=$(cat mock-data.json | jq . -c)" >> $GITHUB_ENV
+        run: echo "CONFIG_DATA=$(cat mock-configdata.json | jq . -c)" >> $GITHUB_ENV
 
       - name: create action1 output
         id: action1
