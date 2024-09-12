@@ -23,10 +23,19 @@ jobs:
         run: echo 'config.deploy.imageTag=abc123.lloool:34324' >> $GITHUB_OUTPUT
 
       - name: an output that should not be captured
-        run: echo 'some-other-output="i should not be here"' >> $GITHUB_OUTPUT
+        id: ignored_output
+        run: |
+          echo 'some.other.output="i should not be here"' >> $GITHUB_OUTPUT
+          echo 'some-other-output="i should also not be here"' >> $GITHUB_OUTPUT
 
-      # - name: print steps
-      #   run: echo "${{ toJSON(steps) }}"
+      - name: a step with multiple outputs
+        id: multioutput
+        run: |
+          echo 'config.deploy.imageTag=abc123.lloool:34324' >> $GITHUB_OUTPUT
+          echo 'config.deploy.imageName=abc123.lloool' >> $GITHUB_OUTPUT
+
+      - name: print steps
+        run: echo "${{ toJSON(steps) }}"
 
       # output: config_output
       - name: load ts action

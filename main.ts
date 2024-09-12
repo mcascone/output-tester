@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 
+// Define the types used in the action
 type JsonStepData = {
   [key: string]: {
     outputs: { [key: string]: any },
@@ -57,7 +58,7 @@ export function extractOutputs(data: JsonStepData): { [key: string]: any }[] {
         }
       }
       if (Object.keys(filteredOutputs).length > 0) {
-        outputsArray.push(data[key].outputs);
+        outputsArray.push(filteredOutputs);
       }
     }
   }
@@ -93,7 +94,7 @@ export function updateConfigFromExtracts(extracts: Extract[], configData: Config
         continue;
       }
 
-      const nestedObject = path.reduce((obj, prop) => {
+      const nestedObject = path.reduce((obj, prop) => {``
         if (!obj[prop]) {
           obj[prop] = {};
         }

@@ -33,6 +33,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getconfigdata = getconfigdata;
+exports.extractOutputs = extractOutputs;
 exports.updateConfigFromExtracts = updateConfigFromExtracts;
 const core = __importStar(require("@actions/core"));
 // THE ACTUAL ACTION CODE
@@ -61,8 +62,8 @@ function getconfigdata() {
     });
 }
 // UTILITY FUNCTIONS
-// extract the outputs from the passed-in step context data.
-// only include outputs that start with 'config.'
+// Extract the outputs from the passed-in step context data.
+// Only include outputs that start with 'config.'
 function extractOutputs(data) {
     const outputsArray = [];
     for (const key in data) {
@@ -74,7 +75,7 @@ function extractOutputs(data) {
                 }
             }
             if (Object.keys(filteredOutputs).length > 0) {
-                outputsArray.push(data[key].outputs);
+                outputsArray.push(filteredOutputs);
             }
         }
     }
@@ -90,6 +91,7 @@ function updateConfigFromExtracts(extracts, configData) {
                 continue;
             }
             const nestedObject = path.reduce((obj, prop) => {
+                ``;
                 if (!obj[prop]) {
                     obj[prop] = {};
                 }

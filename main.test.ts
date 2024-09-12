@@ -1,143 +1,173 @@
+import { getconfigdata, extractOutputs, updateConfigFromExtracts } from './main';
 import * as core from '@actions/core';
-import { getconfigdata, extractOutputs } from './main';
+const fs = require('fs');
+const path = require('path');
 
 jest.mock('@actions/core');
 
 describe('getconfigdata', () => {
-  // beforeEach(() => {
-  //   jest.clearAllMocks();
-  // });
+  beforeEach(() => {
+    jest.clearAllMocks();
 
-  it('should extract outputs and update config data', async () => {
-    const mockStepData = {
-      step1: {
-        outputs: { out1: 'value1' },
+    // read mock-data.json into the CONFIG_DATA environment variable
+    const mockDataPath = path.join(__dirname, 'mock-configdata.json');
+    const mockData = fs.readFileSync(mockDataPath, 'utf8');
+    process.env['CONFIG_DATA'] = mockData;
+
+    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify({
+      action1: {
+        outputs: { 'config.build.JAVA': 'tester' },
         conclusion: 'success',
-        outcome: 'success',
+        outcome: 'success'
       },
-      step2: {
-        outputs: { out2: 'value2' },
+      action2: {
+        outputs: { 'other-output': 'ignore' },
         conclusion: 'success',
-        outcome: 'success',
-      },
-    };
-
-    const mockConfigData = {
-      existingKey: 'existingValue',
-    };
-
-    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify(mockStepData));
-    (core.setOutput as jest.Mock).mockImplementation(() => {});
-    process.env['CONFIG_DATA'] = JSON.stringify(mockConfigData);
-
-    await getconfigdata();
-
-    expect(core.getInput).toHaveBeenCalledWith('stepdata');
-    expect(core.setOutput).toHaveBeenCalledWith('config_output', {
-      existingKey: 'existingValue',
-      "0": { out1: 'value1'},
-      "1": { out2: 'value2'},
-    });
+        outcome: 'success'
+      }
+    }));
   });
 
-  it('should put the extracted outputs in the config data in the correct path', async () => {
-    const mockStepData = {
-      step1: {
-        outputs: { "deploy.imageTag": 'newImageTag' },
-        conclusion: 'success',
-        outcome: 'success',
-      },
-    };
-
-    const mockConfigData = {
-      existingKey: 'existingValue',
-      deploy: { imageTag: 'oldImageTag', otherData: 'otherData' },
-    };
-
-    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify(mockStepData));
-    (core.setOutput as jest.Mock).mockImplementation(() => {});
-    process.env['CONFIG_DATA'] = JSON.stringify(mockConfigData);
-
+  it('should update config data and set the output', async () => {
     await getconfigdata();
 
-    expect(core.getInput).toHaveBeenCalledWith('stepdata');
-    expect(core.setOutput).toHaveBeenCalledWith('config_output', {
-      existingKey: 'existingValue',
-      deploy: { imageTag: 'newImageTag', otherData: 'otherData' },
-    });
-  });
-
-
-  it('should handle empty outputs gracefully', async () => {
-    const mockStepData = {
-      step1: {
-        outputs: {},
-        conclusion: 'success',
-        outcome: 'success',
-      },
-    };
-
-    const mockConfigData = {
-      existingKey: 'existingValue',
-    };
-
-    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify(mockStepData));
-    process.env['CONFIG_DATA'] = JSON.stringify(mockConfigData);
-
-    await getconfigdata();
-
-    expect(core.getInput).toHaveBeenCalledWith('stepdata');
-    expect(core.setOutput).toHaveBeenCalledWith('config_output', {
-      existingKey: 'existingValue',
-    });
-  });
-
-  it('should handle missing CONFIG_DATA gracefully', async () => {
-    const mockStepData = {
-      step1: {
-        outputs: { out1: 'value1' },
-        conclusion: 'success',
-        outcome: 'success',
-      },
-    };
-
-    (core.getInput as jest.Mock).mockReturnValue(JSON.stringify(mockStepData));
-    process.env['CONFIG_DATA'] = undefined;
-
-    await expect(getconfigdata()).rejects.toThrow(SyntaxError);
+    expect(core.debug).toHaveBeenCalledWith('Extracted outputs: [{"config.build.JAVA":"tester"}]');
+    expect(core.info).toHaveBeenCalledWith('Config data updated: config.build.JAVA');
+    expect(core.setOutput).toHaveBeenCalledWith('config_output', expect.objectContaining({
+      build: expect.objectContaining({
+        JAVA: expect.stringContaining('tester')
+      })
+    }));  
   });
 });
 
 describe('extractOutputs', () => {
-  it('should extract non-empty outputs', () => {
-    console.log(test);
-    const mockStepData = {
-      step1: {
-        outputs: { out1: 'value1' },
+  it('should extract outputs that start with "config."', () => {
+    const input = {
+      action1: {
+        outputs: { 'config.build.JAVA': 'test-app' },
         conclusion: 'success',
-        outcome: 'success',
-      },
-      step2: {
-        outputs: {},
-        conclusion: 'success',
-        outcome: 'success',
-      },
+        outcome: 'success'
+      }
     };
 
-    const result = extractOutputs(mockStepData);
-    expect(result).toEqual([{ out1: 'value1' }]);
+    const result = extractOutputs(input);
+
+    expect(result).toEqual([{ 'config.build.JAVA': 'test-app' }]);
   });
 
-  it('should return an empty array if no outputs are present', () => {
-    const mockStepData = {
-      step1: {
-        outputs: {},
+  it('should ignore outputs that do not start with "config."', () => {
+    const input = {
+      action1: {
+        outputs: { 'other.output': 'ignore' },
         conclusion: 'success',
-        outcome: 'success',
-      },
+        outcome: 'success'
+      }
     };
 
-    const result = extractOutputs(mockStepData);
+    const result = extractOutputs(input);
+
     expect(result).toEqual([]);
+  });
+
+  it('should handle multiple outputs in one step', () => {
+    const input = {
+      action1: {
+        outputs: {
+          'config.build.JAVA': 'test-app',
+          'config.app.version': '1.0.0'
+        },
+        conclusion: 'success',
+        outcome: 'success'
+      }
+    };
+
+    const result = extractOutputs(input);
+
+    expect(result).toEqual([
+      { 'config.build.JAVA': 'test-app', 'config.app.version': '1.0.0' }
+    ]);
+  });
+
+  it('should handle outputs in multiple steps', () => {
+    const input = {
+      action1: {
+        outputs: { 'config.build.JAVA': 'test-app' },
+        conclusion: 'success',
+        outcome: 'success'
+      },
+      step2: {
+        outputs: { 'config.app.version': '1.0.0' },
+        conclusion: 'success',
+        outcome: 'success'
+      }
+    };
+
+    const result = extractOutputs(input);
+
+    expect(result).toEqual([
+      { 'config.build.JAVA': 'test-app' },
+      { 'config.app.version': '1.0.0' }
+    ]);
+  });
+
+  it('should handle steps with multiple outputs that do and do not start with "config."', () => {  
+    const input = {
+      action1: {
+        outputs: {
+          'config.build.JAVA': 'test-app',
+          'other.output': 'ignore'
+        },
+        conclusion: 'success',
+        outcome: 'success'
+      }
+    };
+
+    const result = extractOutputs(input);
+
+    expect(result).toEqual([{ 'config.build.JAVA': 'test-app' }]);
+  });
+
+  it('should return an empty array if no outputs match', () => {
+    const input = {
+      action1: {
+        outputs: { 'other.output': 'ignore' },
+        conclusion: 'success',
+        outcome: 'success'
+      }
+    };
+
+    const result = extractOutputs(input);
+
+    expect(result).toEqual([]);
+  });
+});
+
+describe('updateConfigFromExtracts', () => {
+  it('should add config data based on extracts', () => {
+    const extracts = [{ 'config.build.JAVA': 'tester' }];
+    const configData = { app: { name: 'test-app' } };
+
+    updateConfigFromExtracts(extracts, configData);
+
+    expect(configData).toEqual({ app: { name: 'test-app' }, build: { JAVA: 'tester' } });
+  });
+
+  it('should update nested keys correctly', () => {
+    const extracts = [{ 'config.app.settings.theme': 'dark' }];
+    const configData = { app: { settings: { theme: 'light' } } };
+
+    updateConfigFromExtracts(extracts, configData);
+
+    expect(configData).toEqual({ app: { settings: { theme: 'dark' } } });
+  });
+
+  it('should log an error for invalid keys', () => {
+    const extracts = [{ 'config.': 'invalid' }];
+    const configData = {};
+
+    updateConfigFromExtracts(extracts, configData);
+
+    expect(core.error).toHaveBeenCalledWith('Invalid key: config.');
   });
 });
