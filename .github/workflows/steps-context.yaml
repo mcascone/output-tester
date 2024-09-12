@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm ci
 
       # read mock-data.json into CONFIG_DATA
       - name: get mock config env
